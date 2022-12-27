@@ -37,7 +37,7 @@ def add_urls():
                 update_db(name, path)
 
 
-def add_infoplist(info_path, index_page):
+def add_infoplist(docset_name, keyword, info_path, index_page):
     name = docset_name.split('.')[0]
     info = """
     <?xml version="1.0" encoding="UTF-8"?>
@@ -51,16 +51,21 @@ def add_infoplist(info_path, index_page):
             <key>DashDocSetFamily</key>
             <string>{2}</string>
             <key>DocSetPlatformFamily</key>
-            <string>requests</string>
+            <string>{4}</string>
             <key>isDashDocset</key>
             <true/>
             <key>isJavaScriptEnabled</key>
             <true/>
             <key>dashIndexFilePath</key>
             <string>{3}</string>
+            <key>DashDocSetPluginKeyword</key>
+            <string>{4}</string>
+            <key>DashDocSetKeyword</key>
+            <string>{4}</string>
     </dict>
     </plist>
-    """.format(name, name, name, index_page)
+    """.format(name, name, name, index_page, keyword)
+    info = re.sub("^\s+", "", info)
 
     try:
         open(info_path, 'wb').write(info)
@@ -85,6 +90,8 @@ if __name__ == "__main__":
 
     parser.add_argument('-n', '--name',
                         help='Name the docset explicitly')
+    parser.add_argument('-k', '--keyword',
+                        help='Search keyword for the docset explicitly')
     parser.add_argument('-d', '--destination',
                         dest='path',
                         default='',
@@ -176,7 +183,13 @@ if __name__ == "__main__":
     else:
         index_page = results.index_page
 
-    add_infoplist(info_path, index_page)
+    if not results.keyword:
+        keyword = docset_name.split('.')[0].lower()
+    else:
+        keyword = results.keyword
+
+
+    add_infoplist(docset_name, keyword, info_path, index_page)
 
     # Add icon file if defined
     icon_filename = results.filename
